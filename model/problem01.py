@@ -50,17 +50,17 @@ if __name__ == '__main__':
             emp_group[type].append(employee)
 
     #3.先进行排序
-    data_start = datetime.datetime.strptime("2021-08-11","%Y-%m-%d")
-    data_end = datetime.datetime.strptime("2021-08-25","%Y-%m-%d")
+    date_start = datetime.datetime.strptime("2021-08-11","%Y-%m-%d")
+    date_end = datetime.datetime.strptime("2021-08-25","%Y-%m-%d")
     #sortedFlight = sorted(fli,key=lambda x: fli.DptrDate,reverse=True)  #ranking
     #print(sortedFlight)
     data = []
-    data_rank = [data_start]
-    delta = (data_end-data_start).days
+    date_rank = [date_start]
+    delta = (date_end-date_start).days
     #生成一个日期排序
     for day in range(1,delta+1):
-        data_rank.append(data_start+datetime.timedelta(days=day))
-    print(data_rank)
+        date_rank.append(date_start+datetime.timedelta(days=day))
+    print(date_rank)
 
 
     # 4.提取每日航班
@@ -74,7 +74,7 @@ if __name__ == '__main__':
             flight_day[flight_date] = []
             flight_day[flight_date].append(flight)
     # day =0
-    # for i in data_rank:
+    # for i in date_rank:
     #     for flight in fli:
     #         if flight.DptrDate == i :
     #             data.append(flight)
@@ -93,29 +93,29 @@ if __name__ == '__main__':
     FistOfficernum = 0
     num = 0
 
-    for i in data_rank:
+    for i in date_rank:
         print("coming:", flight_day[i.date()])
         while (len(flight_day[i.date()])!=0):
             FirstFlight = flight_day[i.date()][0]
             #分配机长并且同时记录ArrvTime和ArrvStn（到达机场），这里需要加个判断机长是不是用完了？动用type = 3 全能机长
             if emp_group[0][Capnum] in emp_arrange:
                 emp_arrange[emp_group[0][Capnum]].append(FirstFlight)
-                emp_group[0][Capnum].ArrvTime = FirstFlight.ArrvTime
+                emp_group[0][Capnum].ArrvTime = FirstFlight.ArrvTimestamp
                 emp_group[0][Capnum].ArrvStn = FirstFlight.ArrvStn
             else:
                 emp_arrange[emp_group[0][Capnum]] = []
                 emp_arrange[emp_group[0][Capnum]].append(FirstFlight)
-                emp_group[0][Capnum].ArrvTime = FirstFlight.ArrvTime
+                emp_group[0][Capnum].ArrvTime = FirstFlight.ArrvTimestamp
                 emp_group[0][Capnum].ArrvStn = FirstFlight.ArrvStn
             #分配一名副机长，同时记录ArrvTime和ArrvStn（到达机场）
             if emp_group[1][FistOfficernum] in emp_arrange:
                 emp_arrange[emp_group[1][FistOfficernum]].append(FirstFlight)
-                emp_group[1][FistOfficernum].ArrvTime = FirstFlight.ArrvTime
+                emp_group[1][FistOfficernum].ArrvTime = FirstFlight.ArrvTimestamp
                 emp_group[1][FistOfficernum].ArrvStn = FirstFlight.ArrvStn
             else:
                 emp_arrange[emp_group[1][FistOfficernum]] = []
                 emp_arrange[emp_group[1][FistOfficernum]].append(FirstFlight)
-                emp_group[1][FistOfficernum].ArrvTime = FirstFlight.ArrvTime
+                emp_group[1][FistOfficernum].ArrvTime = FirstFlight.ArrvTimestamp
                 emp_group[1][FistOfficernum].ArrvStn = FirstFlight.ArrvStn
             #记录完信息，从列表李删除该航班信息
             del flight_day[i.date()][0]
@@ -124,12 +124,14 @@ if __name__ == '__main__':
             #检测剩余航班有满足继续飞行的要求：
             for flight in flight_day[i.date()]:
                 print((emp_group[0][Capnum].ArrvStn == flight.DptrStn))
-                time_error = (flight.DptrTimestamp - emp_group[0][Capnum].ArrvTime).seconds
+                print("时间1：", flight.DptrTimestamp)
+                print("时间2：", emp_group[0][Capnum].ArrvTime)
+                time_error = (flight.DptrTimestamp - emp_group[0][Capnum].ArrvTime).seconds   #单位是：s
                 print("时间差：", time_error)
-                # if (emp_group[0][Capnum].ArrvStn == flight.DptrStn) and (flight.DptrTimestamp - emp_group[0][Capnum].ArrvTime >= args.MinCT):  #满足进行飞行
-                #     print("find")
-                # else:
-                #     print("no")
+                if (emp_group[0][Capnum].ArrvStn == flight.DptrStn) and (time_error >= args.MinCT*60):  #满足进行飞行
+                    print("find")
+                else:
+                    print("no")
 
 
     #print("the 1st assignment:",emp_arrange)
