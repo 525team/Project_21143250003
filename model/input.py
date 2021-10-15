@@ -74,6 +74,7 @@ def Read_flight(DataName, DataDir="../data/"):
             fli.append(tmp)
         return fli
 
+
 if __name__ == '__main__' :
     fli = Read_flight(DataName='Data A-Flight.csv')
     emp = Read_crew('Data A-Crew.csv')
