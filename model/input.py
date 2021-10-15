@@ -1,6 +1,7 @@
 import sys
 import csv
 import numpy as np
+import datetime
 
 class Employee():
     def __init__(self, EmpNo, Captain, FirstOfficer, Deadhead, Base, DutyCostPerHour, ParingCostPerHour):
@@ -17,7 +18,7 @@ class Employee():
             self.Deadhead) + "," + self.Base + "," + self.DutyCostPerHour + "," + self.ParingCostPerHour + "]"
 
 class Flight():
-    def __init__(self, FltNum, DptrDate, DptrTime, DptrStn, ArrvDate, ArrvTime, ArrvStn,Comp, CompCaptain,CompFirstOfficer):
+    def __init__(self, FltNum, DptrDate, DptrTime, DptrStn, ArrvDate, ArrvTime, ArrvStn,Comp, CompCaptain,CompFirstOfficer, Timestamp):
         self.FltNum = FltNum
         self.DptrDate = DptrDate
         self.DptrTime = DptrTime
@@ -28,10 +29,11 @@ class Flight():
         self.Comp = Comp
         self.CompCaptain = CompCaptain
         self.CompFirstOfficer = CompFirstOfficer
+        self.Timestamp = Timestamp
 
     def __str__(self):
         return "[" + self.FltNum + "," + str(self.DptrDate) + "," + str(self.DptrTime) + "," + str(
-            self.DptrStn) + "," + str(self.DptrStn) + "," + str(self.ArrvDate) + "," + str(self.ArrvTime) +"," + str(self.Comp) +"]"
+            self.DptrStn) + "," + str(self.DptrStn) + "," + str(self.ArrvDate) + "," + str(self.ArrvTime) + "," + str(self.Comp) + "," + str(self.Timestamp)+ "]"
 
 
 #读取Employee数据，并且提供一个建立Employee类的函数
@@ -72,9 +74,11 @@ def Read_flight(DataName, DataDir="../data/"):
             elif row[7] == "C1F2":
                 CompCaptain = 1
                 CompFirstOfficer = 2
-
+            combine_time = row[1] + ' ' + row[2]  #将日期和时间组合在一起
+            row[1] = datetime.datetime.strptime(row[1], "%m/%d/%Y")
+            combine_time = datetime.datetime.strptime(combine_time, "%m/%d/%Y %H:%M")
             tmp = Flight(FltNum=row[0], DptrDate=row[1], DptrTime=row[2], DptrStn=1, ArrvDate=row[4],
-                         ArrvTime=row[5], ArrvStn=row[6], Comp=row[7], CompCaptain=CompCaptain, CompFirstOfficer=CompFirstOfficer)
+                         ArrvTime=row[5], ArrvStn=row[6], Comp=row[7], CompCaptain=CompCaptain, CompFirstOfficer=CompFirstOfficer, Timestamp=combine_time)
             fli.append(tmp)
         return fli
 
@@ -84,5 +88,6 @@ if __name__ == '__main__' :
     emp = Read_crew('Data A-Crew.csv')
     #costtime = fli[0].DptrTime - fli[0].ArrvTime
     #print(costtime)
-    print(emp[1].Captain)
+    print("origin:", fli[1].Timestamp)
+
 
