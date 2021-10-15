@@ -17,7 +17,7 @@ class Employee():
             self.Deadhead) + "," + self.Base + "," + self.DutyCostPerHour + "," + self.ParingCostPerHour + "]"
 
 class Flight():
-    def __init__(self, FltNum, DptrDate, DptrTime, DptrStn, ArrvDate, ArrvTime, ArrvStn, CompCaptain,CompFirstOfficer):
+    def __init__(self, FltNum, DptrDate, DptrTime, DptrStn, ArrvDate, ArrvTime, ArrvStn,Comp, CompCaptain,CompFirstOfficer):
         self.FltNum = FltNum
         self.DptrDate = DptrDate
         self.DptrTime = DptrTime
@@ -25,6 +25,7 @@ class Flight():
         self.ArrvDate = ArrvDate
         self.ArrvTime = ArrvTime
         self.ArrvStn = ArrvStn
+        self.Comp = Comp
         self.CompCaptain = CompCaptain
         self.CompFirstOfficer = CompFirstOfficer
 
@@ -73,7 +74,7 @@ def Read_flight(DataName, DataDir="../data/"):
                 CompFirstOfficer = 2
 
             tmp = Flight(FltNum=row[0], DptrDate=row[1], DptrTime=row[2], DptrStn=1, ArrvDate=row[4],
-                         ArrvTime=row[5], ArrvStn=row[6], CompCaptain=CompCaptain, CompFirstOfficer=CompFirstOfficer)
+                         ArrvTime=row[5], ArrvStn=row[6], Comp=row[7], CompCaptain=CompCaptain, CompFirstOfficer=CompFirstOfficer)
             fli.append(tmp)
         return fli
 
