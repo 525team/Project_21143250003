@@ -2,7 +2,6 @@ import sys
 import csv
 import numpy as np
 
-
 class Employee():
     def __init__(self, EmpNo, Captain, FirstOfficer, Deadhead, Base, DutyCostPerHour, ParingCostPerHour):
         self.EmpNo = EmpNo
@@ -18,7 +17,7 @@ class Employee():
             self.Deadhead) + "," + self.Base + "," + self.DutyCostPerHour + "," + self.ParingCostPerHour + "]"
 
 class Flight():
-    def __init__(self, FltNum, DptrDate, DptrTime, DptrStn, ArrvDate, ArrvTime, ArrvStn, Comp):
+    def __init__(self, FltNum, DptrDate, DptrTime, DptrStn, ArrvDate, ArrvTime, ArrvStn, CompCaptain,CompFirstOfficer):
         self.FltNum = FltNum
         self.DptrDate = DptrDate
         self.DptrTime = DptrTime
@@ -26,15 +25,13 @@ class Flight():
         self.ArrvDate = ArrvDate
         self.ArrvTime = ArrvTime
         self.ArrvStn = ArrvStn
-        self.Comp = Comp
+        self.CompCaptain = CompCaptain
+        self.CompFirstOfficer = CompFirstOfficer
 
     def __str__(self):
         return "[" + self.FltNum + "," + str(self.DptrDate) + "," + str(self.DptrTime) + "," + str(
             self.DptrStn) + "," + str(self.DptrStn) + "," + str(self.ArrvDate) + "," + str(self.ArrvTime) +"," + str(self.Comp) +"]"
 
-class cat():
-    def __init__(self,EmpNo):
-        self.EmpNo = EmpNo
 
 #读取Employee数据，并且提供一个建立Employee类的函数
 def Read_crew(DataName, DataDir="../data/"):
@@ -68,9 +65,15 @@ def Read_flight(DataName, DataDir="../data/"):
 
         for row in data:
             # row[1] = 1 if row[1] == 'Y' else 0
-            # row[2] = 1 if row[2] == 'Y' else 0
+            if row[7] =='C1F1':
+                CompCaptain = 1
+                CompFirstOfficer = 1
+            elif row[7] == "C1F2":
+                CompCaptain = 1
+                CompFirstOfficer = 2
+
             tmp = Flight(FltNum=row[0], DptrDate=row[1], DptrTime=row[2], DptrStn=1, ArrvDate=row[4],
-                         ArrvTime=row[5], ArrvStn=row[6], Comp=row[7])
+                         ArrvTime=row[5], ArrvStn=row[6], CompCaptain=CompCaptain, CompFirstOfficer=CompFirstOfficer)
             fli.append(tmp)
         return fli
 
@@ -78,6 +81,7 @@ def Read_flight(DataName, DataDir="../data/"):
 if __name__ == '__main__' :
     fli = Read_flight(DataName='Data A-Flight.csv')
     emp = Read_crew('Data A-Crew.csv')
-    print(fli[0].DptrTime)
+    #costtime = fli[0].DptrTime - fli[0].ArrvTime
+    #print(costtime)
     print(emp[1].Captain)
 
