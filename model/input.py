@@ -38,7 +38,7 @@ class Flight():
 
     def __str__(self):
         return "[" + str(self.Num) + "," + self.FltNum + "," + str(self.DptrDate) + "," + str(self.DptrTime) + "," + str(
-            self.DptrStn) + "," + str(self.DptrStn) + "," + str(self.ArrvDate) + "," + str(self.ArrvTime) + "," + str(self.Comp) + "," + str(self.DptrTimestamp) + "," + str(self.ArrvTimestamp)+ "]"
+            self.DptrStn) + "," + str(self.ArrvStn) + "," + str(self.ArrvDate) + "," + str(self.ArrvTime) + "," + str(self.Comp) + "," + str(self.DptrTimestamp) + "," + str(self.ArrvTimestamp)+ "]"
 
 
 
