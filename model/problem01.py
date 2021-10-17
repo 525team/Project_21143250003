@@ -114,6 +114,23 @@ def feasibility_check(X,Y,flight):
             else:
                 continue
 
+#匹配航班：
+def feasibility_check_fli(xy,flight):
+    num = len(flight)
+    X = xy[0]
+    for i,fly in enumerate(flight):
+        time_error = ((fly.DptrTimestamp - X.ArrvTime).seconds) / 60
+        if fly.DptrTimestamp > X.ArrvTime and  (X.ArrvStn == fly.DptrStn) and (time_error >= args.MinCT ):
+            #计算时间,单位换算成mins
+            return 1, xy, [fly,i]
+            break
+        else:  #起飞时间都不满足
+            if i == num - 1:  # 如果是最后一个航班，那么就说明XY组合不适合，没有能飞的航班了
+                return 0, None, None
+                break
+            else:
+                continue  # 否则就继续看有无航班
+
 #判断是否有人可以继续执飞：
 def judge_fly(x,y,z):
     if (len(x) + len(x) >=1) and (len(y) + len(z) >=1) and (len(x) + len(y) + len(Z_list) >=2):
@@ -192,15 +209,26 @@ def problity_choice(x,y,P):
     else:
         return y
 
+#检查xy的起飞地点是否一致
+def y_choice(x,y):
+    if x.ArrvStn == y.ArrvStn:
+        return 1
+    else:
+        return 0
+
+#选出新的机组C和F
 def pair_CF(captain_sortedlist,FirstOficer_sortedlist,all2_sortedlist, P):
     cap_num = len(captain_sortedlist)
     FO_num = len(FirstOficer_sortedlist)
     all_num = len(all2_sortedlist)
+    pair = 0 #配对数
     new_caplist = []
     new_FOlist = []
+    pair_xy = []
     if FO_num == cap_num :  #人数相等的话，偶数平分，奇数是最后一个替补休息
         # if (all_num%2) == 0:  #是偶数
         cut_num = math.floor(all_num/2)
+        pair = FO_num +cut_num
         # 候选列表
         while (len(new_caplist)<cap_num+cut_num):
             if len(captain_sortedlist) == 0:
@@ -219,11 +247,15 @@ def pair_CF(captain_sortedlist,FirstOficer_sortedlist,all2_sortedlist, P):
                 else:
                     del all2_sortedlist[0]
                 new_caplist.append(new_one)
-
+        for y in FirstOficer_sortedlist:
+            new_FOlist.append(y)
+        for z in all2_sortedlist:
+            new_FOlist.append(z)
 
     elif FO_num > cap_num:     #副机长人数多，正机长少
         error = FO_num -cap_num
         if cap_num + all_num <= FO_num: #差距过大的话，全给cap
+            pair = cap_num + all_num
             if len(captain_sortedlist) == 0:
                 # 说明x选完了，要把Z全加上去
                 for z in all2_sortedlist:
@@ -240,17 +272,23 @@ def pair_CF(captain_sortedlist,FirstOficer_sortedlist,all2_sortedlist, P):
                 else:
                     del all2_sortedlist[0]
                 new_caplist.append(new_one)
+            new_FOlist = FirstOficer_sortedlist
         else:
-            #cap要得到(error+all_num)/2个名额,然后
+            #cap要得到(error+all_num)/2个名额,然后,相差不大
+
             reference = math.floor(cap_num + (error+all_num)/2)
+            pair = reference
             print("队伍总数：", reference)
             while (len(new_caplist) < reference):
                 if len(captain_sortedlist) == 0:
                     #说明x选完了，要把Z全加上去
+                    print("xm没人了")
                     for z in all2_sortedlist:
                         new_caplist.append(z)
+                        print("new_cap的数量：", len(new_caplist))
                 elif len(all2_sortedlist) == 0:
                     #说明z选完了。要把X全加上去
+                    print("z选完了")
                     for x in captain_sortedlist:
                         new_caplist.append(x)
                 else:
@@ -264,7 +302,34 @@ def pair_CF(captain_sortedlist,FirstOficer_sortedlist,all2_sortedlist, P):
                 # new_caplist.append(random.choices([captain_sortedlist[0], all2_sortedlist[0]], P))
                 # for ii in new_caplist:
                 #     print("我是概率选取的人：", ii)
-    return new_caplist
+            for y in FirstOficer_sortedlist:
+                new_FOlist.append(y)
+            for z in all2_sortedlist:
+                new_FOlist.append(z)
+    cap_copy = new_caplist
+    FO_copy = new_FOlist
+    return cap_copy,FO_copy, pair
+
+#将C和F配对成机组
+def pairXY(new_caplist,new_FOlist,pair):
+    pair_xy = []
+    while(len(pair_xy)<pair):
+        for i,ix in enumerate(new_caplist):
+            if ix!=0:
+                for j,iy in enumerate(new_FOlist):
+                    if iy!=0:
+                        if y_choice(ix,iy) == 1:
+                            print("成对：",len(pair_xy))
+                            pair_xy.append([ix,iy])
+                            # print("成对：",len(pair_xy))
+                            new_caplist[i] = 0
+                            new_FOlist[j] = 0
+                            break
+            if len(pair_xy) == pair:
+                break
+    for i in pair_xy:
+        print("pair:",i[0],i[1])
+    return pair_xy
 
 
 if __name__ == '__main__':
@@ -368,53 +433,38 @@ if __name__ == '__main__':
         print("***************************************************今天是第",i, "*******************************************************")
 
         # 机长资格check,需要重新排序
-        X_list = emp_ranking(emp_group[0])  # 机长
-        Y_list = emp_ranking(emp_group[1])   # 副机长
-        Z_list = emp_ranking(emp_group[2])   # 都行
-        new_xlist = pair_CF(X_list,Y_list,Z_list,0.65)
-        print("新的机长列表：", new_xlist)
+
+        new_xlist,new_ylist, pair_num = pair_CF(emp_ranking(emp_group[0]),emp_ranking(emp_group[1]),emp_ranking(emp_group[2]),0.65)
+        X_list = new_xlist  # 机长
+        Y_list = new_ylist   # 副机长
+
+        print("新的机长列表：", new_xlist, new_ylist)
+        new_xy = pairXY(new_xlist,new_ylist,pair_num)
         #备份用，一旦用过就删除，剩下的就是闲人
         Emp_rest = emp
-
+        new_xy_copy =new_xy
         Capnum = 0
-        X = new_xlist[Capnum]
+        XY = new_xy[Capnum]
+        rest_XY = new_xy
+
 
 
         while (len(F_day)!=0):
             # 资格测试
-            flag_feasibility, y_list, fly_list = feasibility_check(X, Y_list, F_day)
-            # y的分析
-            if y_list != None:
-                Y = y_list[0]
-                Y_num = y_list[1]
-            # else:
-            #     Y = None
-            #     Y_num = None
-            # 适合航班的分析
-            if fly_list != None:
-                fly = fly_list[0]
-                fly_num = fly_list[1]
-            # else:
-            #     X = None
-            #     X_num = None
-            # 不满足条件的人
-            # if y_list != None:
-            #     Y = y_list[0]
-            #     Y_num = y_list[1]
-            # else:
-            #     Y = None
-            #     Y_num = None
-            # print("现在是", X, "在执行飞行", fly)
+            print("feasibility_check:")
+            # flag_feasibility, y_list, fly_list = feasibility_check(X, Y_list, F_day)
+            flag_feasibility, xy, fly_list = feasibility_check_fli(XY, F_day)
+
             if flag_feasibility == 1:   #存在这样的航班
                 #飞行 -> 记录 -> 删除
+                X = xy[0]
+                Y = xy[1]
+                fly = fly_list[0]
+                fly_num = fly_list[1]
                 print("现在是", X.EmpNo,Y.EmpNo, "在执行飞行", fly)
                 Arranged_fli.append(fly)
                 update_emp(emp,X.No,fly.ArrvTimestamp,fly.ArrvStn)
                 update_emp(emp,Y.No,fly.ArrvTimestamp,fly.ArrvStn)
-                # emp[X.No].ArrvTime = fly.ArrvTimestamp
-                # emp[X.No].ArrvStn = fly.ArrvStn
-                # emp[Y.No].ArrvTime = fly.ArrvTimestamp
-                # emp[Y.No].ArrvStn = fly.ArrvStn
                 if X in emp_arrange:
                     emp_arrange[X].append(fly)
                     X.ArrvTime = fly.ArrvTimestamp
@@ -440,37 +490,50 @@ if __name__ == '__main__':
                 if X not in Arranged_emp:
                     Arranged_emp.append(X)
                     Arranged_emp.append(Y)
+                if xy in rest_XY:
+                    rest_XY.remove(xy)
+                    # for xxyy in rest_XY:
+                    #      print("剩下的机组：",xxyy)
                 del F_day[fly_num]
-            # elif (len(X_list) !=0 or len(Z_list)!=0) and (len(Y_list)!=0 or len(Z_list)!=0):
-            elif (len(X_list) + len(Z_list) >=1) and (len(Y_list) + len(Z_list) >=1) and (len(X_list) + len(Y_list) + len(Z_list) >=2):
-                print("有人不用上班啦,剩余", len(X_list),len(Y_list),len(Z_list),"人")
-                # if X not in Rest_emp:
-                #     Rest_emp.append(X)
-                #     Rest_emp.append(Y)
-                if (len(X_list) == 0 ) and (len(Z_list)!= 0):  #剩余没机长了
-                    print("我来借人")
-                    X_list.append(Z_list[0])
-                    del Z_list[0]
-                else:
-                    print("此人不符合条件，换下一个人:", X_list[Capnum])
-                    X_list[Capnum].State = 3
-                    del X_list[Capnum]
-
-                    print("Y:,", Y)
-                    # Y_num = None表示没有用上副机长，正机长自身不符合条件
-                    if  Y != None:
-                        # 表示Y用完了。
-                        # print("Y用完了：",Y_num)
-                        print("删除了Y：",Y_list[Y_num])
-                        Y_list[Y_num] = 3
-                        del Y_list[Y_num]
-                        #del Y_list[Y_num]
-                    if len(X_list) == 0:
-                        print("X没人了:")
-                        continue
-                    else:
-                        print("X还有人在，顶上去：",X_list[0])
-                        X = X_list[0]
+            elif (len(new_xy)!=0): #机组还有剩余
+                print("这组人下班,剩余", len(new_xy),"人",Capnum)
+                new_xy[0][0].State = 3
+                new_xy[0][1].State = 3
+                print("Capnum:", new_xy[Capnum][0], new_xy[Capnum][1])
+                del new_xy[0]
+                # print("Capnum:",new_xy[Capnum][0],new_xy[Capnum][1])
+                if (len(new_xy)!=0):
+                    XY = new_xy[Capnum]  # 机长
+                # else
+                # del emp_group[0][Capnum]
+                # new_xy[Capnum][0].State = 3
+                # new_xy[Capnum][1].State = 3
+                # del new_xy[Capnum]
+                #     del X_list[Capnum]
+                # if (len(X_list) == 0 ) and (len(Z_list)!= 0):  #剩余没机长了
+                #     print("我来借人")
+                #     X_list.append(Z_list[0])
+                #     del Z_list[0]
+                # else:
+                #     print("此人不符合条件，换下一个人:", X_list[Capnum])
+                #     X_list[Capnum].State = 3
+                #     del X_list[Capnum]
+                #
+                #     print("Y:,", Y)
+                #     # Y_num = None表示没有用上副机长，正机长自身不符合条件
+                #     if  Y != None:
+                #         # 表示Y用完了。
+                #         # print("Y用完了：",Y_num)
+                #         print("删除了Y：",Y_list[Y_num])
+                #         Y_list[Y_num] = 3
+                #         del Y_list[Y_num]
+                #         #del Y_list[Y_num]
+                #     if len(X_list) == 0:
+                #         print("X没人了:")
+                #         continue
+                #     else:
+                #         print("X还有人在，顶上去：",X_list[0])
+                #         X = X_list[0]
                 # if Capnum < len(emp_group[0])-1:
                 #     Capnum = Capnum + 1
                 #     print("Capnum:",emp_group[0][Capnum])
