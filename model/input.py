@@ -4,7 +4,8 @@ import numpy as np
 import datetime
 
 class Employee():
-    def __init__(self, EmpNo, Captain, FirstOfficer, Deadhead, Base, DutyCostPerHour, ParingCostPerHour, CapType, ArrvTime=None, ArrvStn=None):
+    def __init__(self, No,EmpNo, Captain, FirstOfficer, Deadhead, Base, DutyCostPerHour, ParingCostPerHour, CapType, ArrvTime=None, ArrvStn=None, State=3):
+        self.No = No
         self.EmpNo = EmpNo
         self.Captain = Captain
         self.FirstOfficer = FirstOfficer
@@ -15,9 +16,10 @@ class Employee():
         self.CapType = CapType
         self.ArrvTime = ArrvTime
         self.ArrvStn = ArrvStn
+        self.State = State    # 0:机长 1：副机长 2：DeadHeading 3：工作休息状态  4：休假状态
 
     def __str__(self):
-        return "[" + self.EmpNo + "," + str(self.Captain) + "," + str(self.FirstOfficer) + "," + str(
+        return "[" + str(self.No) + "," + self.EmpNo + "," + str(self.Captain) + "," + str(self.FirstOfficer) + "," + str(
             self.Deadhead) + "," + self.Base + "," + self.DutyCostPerHour + "," + self.ParingCostPerHour + "," + str(self.CapType) + "]"
 
 class Flight():
@@ -54,7 +56,7 @@ def Read_crew(DataName, DataDir="../data/"):
         header_row = next(data)
         #print(header_row)
         emp = []
-        for row in data:
+        for num, row in enumerate(data):
             row[1] = 1 if row[1] == 'Y' else 0
             row[2] = 1 if row[2] == 'Y' else 0
             if row[1] == 1 and row[2] == 0:
@@ -63,7 +65,7 @@ def Read_crew(DataName, DataDir="../data/"):
                 CapType = 1
             else:
                 CapType = 2
-            tmp = Employee(EmpNo=row[0], Captain=row[1], FirstOfficer=row[2], Deadhead=1, Base=row[4],
+            tmp = Employee(No=num,EmpNo=row[0], Captain=row[1], FirstOfficer=row[2], Deadhead=1, Base=row[4],
                            DutyCostPerHour=row[5], ParingCostPerHour=row[6],CapType=CapType)
             emp.append(tmp)
         # for i in emp:
