@@ -4,7 +4,7 @@ import numpy as np
 import datetime
 
 class Employee():
-    def __init__(self, No,EmpNo, Captain, FirstOfficer, Deadhead, Base, DutyCostPerHour, ParingCostPerHour, CapType, ArrvTime=None, ArrvStn=None, State=3):
+    def __init__(self, No,EmpNo, Captain, FirstOfficer, Deadhead, Base, DutyCostPerHour, ParingCostPerHour, CapType, ArrvTime=None, ArrvStn=None, State=3,Task = None):
         self.No = No
         self.EmpNo = EmpNo
         self.Captain = Captain
@@ -17,6 +17,7 @@ class Employee():
         self.ArrvTime = ArrvTime
         self.ArrvStn = ArrvStn
         self.State = State    # 0:机长 1：副机长 2：DeadHeading 3：工作休息状态  4：休假状态
+        self.Task = Task    # 0:机长 1：副机长 2：替补 3：乘机  4：休假
 
     def __str__(self):
         return "[" + str(self.No) + "," + self.EmpNo + "," + str(self.Captain) + "," + str(self.FirstOfficer) + "," + str(
@@ -40,7 +41,7 @@ class Flight():
 
     def __str__(self):
         return "[" + str(self.Num) + "," + self.FltNum + "," + str(self.DptrDate) + "," + str(self.DptrTime) + "," + str(
-            self.DptrStn) + "," + str(self.ArrvStn) + "," + str(self.ArrvDate) + "," + str(self.ArrvTime) + "," + str(self.Comp) + "," + str(self.DptrTimestamp) + "," + str(self.ArrvTimestamp)+ "]"
+        self.DptrStn) + "," + str(self.ArrvStn) + "," + str(self.ArrvDate) + "," + str(self.ArrvTime) + "," + str(self.Comp) + "," + str(self.DptrTimestamp) + "," + str(self.ArrvTimestamp)+ "]"
 
 
 
